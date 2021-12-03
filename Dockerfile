@@ -1,6 +1,11 @@
 FROM node:16-alpine3.14
 
+WORKDIR /home/node/app
+
 ENV GLIBC_VER=2.31-r0
+ENV PULUMI_VERSION=latest
+
+ENV PATH="/root/.pulumi/bin:${PATH}"
 
 RUN apk add --no-cache bash
 
@@ -28,12 +33,20 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     unzip awscliv2.zip && \
     chmod +x aws/install && \
     aws/install
-    
-RUN curl -fsSL https://get.pulumi.com | sh
 
-RUN export PATH=/.pulumi/bin:$PATH
+RUN rm awscliv2.zip \
+    glibc-${GLIBC_VER}.apk \
+    glibc-bin-${GLIBC_VER}.apk \
+    glibc-i18n-${GLIBC_VER}.apk
 
-WORKDIR /home/node/app
+RUN if [ "$PULUMI_VERSION" = "latest" ]; then \
+      curl -fsSL https://get.pulumi.com/ | sh; \
+    else \
+      curl -fsSL https://get.pulumi.com/ | sh -s -- --version $(echo $PULUMI_VERSION | cut -c 2-); \
+    fi
+
+RUN chown -R node:node /root && \
+    chmod 755 /root
 
 USER node
 
