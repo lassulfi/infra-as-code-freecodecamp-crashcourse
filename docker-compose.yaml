@@ -7,3 +7,5 @@ services:
     container_name: app
     volumes:
       - .:/home/node/app
+    environment:
+      - PULUMI_ACCESS_TOKEN=${PULUMI_ACCESS_TOKEN}
